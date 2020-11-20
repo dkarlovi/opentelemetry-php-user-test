@@ -2,6 +2,13 @@
 <?php
 
 use App\Kernel;
+use OpenTelemetry\Contrib\Jaeger\Exporter as JaegerExporter;
+use OpenTelemetry\Sdk\Trace\Clock;
+use OpenTelemetry\Sdk\Trace\Sampler\AlwaysOnSampler;
+use OpenTelemetry\Sdk\Trace\SamplingResult;
+use OpenTelemetry\Sdk\Trace\SpanProcessor\BatchSpanProcessor;
+use OpenTelemetry\Sdk\Trace\TracerProvider;
+use OpenTelemetry\Trace as API;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Dotenv\Dotenv;
@@ -38,6 +45,35 @@ if ($_SERVER['APP_DEBUG']) {
     }
 }
 
+$sampler = new AlwaysOnSampler();
+$samplingResult = $sampler->shouldSample(
+    null,
+    md5((string) microtime(true)),
+    substr(md5((string) microtime(true)), 16),
+    'io.opentelemetry.example',
+    API\SpanKind::KIND_INTERNAL
+);
+
+$exporter = new JaegerExporter(
+    'My App name CLI',
+    'http://localhost:9412/api/v2/spans'
+);
+
+if (SamplingResult::RECORD_AND_SAMPLED === $samplingResult->getDecision()) {
+    $tracer = (new TracerProvider())
+        ->addSpanProcessor(new BatchSpanProcessor($exporter, Clock::get()))
+        ->getTracer('io.opentelemetry.contrib.php');
+    
+    $span = $tracer->startAndActivateSpan('Command '. $_SERVER['argv'][1]);
+}
+
 $kernel = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
 $application = new Application($kernel);
-$application->run($input);
+$application->setAutoExit(false);
+$code = $application->run($input);
+
+if (SamplingResult::RECORD_AND_SAMPLED === $samplingResult->getDecision()) {
+    $tracer->endActiveSpan();
+}
+
+exit($code);
