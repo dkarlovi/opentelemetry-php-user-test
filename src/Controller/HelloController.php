@@ -24,6 +24,11 @@ class HelloController extends AbstractController
 
             $tracer->startAndActivateSpan('Child span');
             usleep(30000);
+            try {
+                throw new \Exception('Ruh roh');
+            } catch (\Exception $exception) {
+                $span->setSpanStatus($exception->getCode(), $exception->getMessage());
+            }
             $tracer->endActiveSpan();
         }
         usleep(30000);
