@@ -39,15 +39,17 @@ class HelloCommand extends Command
         
         global $tracer;
         
-        if ($tracer) {
-            $tracer->startAndActivateSpan('HTTP GET http://127.0.0.1:8000/hello');
+        for ($i = 0; $i < 5; $i++) {
+            if ($tracer) {
+                $tracer->startAndActivateSpan('HTTP GET http://127.0.0.1:8000/hello '. $i);
+            }
+            $response = $this->httpClient->request('GET', 'http://127.0.0.1:8000/hello');
+            if ($tracer) {
+                $tracer->endActiveSpan();
+            }
+            
+            $io->note($response->getContent());
         }
-        $response = $this->httpClient->request('GET', 'http://127.0.0.1:8000/hello');
-        if ($tracer) {
-            $tracer->endActiveSpan();
-        }
-
-        $io->note($response->getContent());
 
         $io->success('Success!');
 
