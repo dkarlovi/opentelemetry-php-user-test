@@ -4,14 +4,18 @@
 ```
 docker-compose up -d
 ```
-2. download [Symfony CLI](https://symfony.com/download)
-3. run
+2. run
+```
+composer install
+```
+3. download [Symfony CLI](https://symfony.com/download)
+4. run
 ```
 symfony serve
 ```
-4. app available at [127.0.0.1:8000/hello](http://127.0.0.1:8000/hello)  
+5. app available at [127.0.0.1:8000/hello](http://127.0.0.1:8000/hello)  
     Jaeger available at [127.0.0.1:16686/search](http://localhost:16686/search)   
-5. run the command with
+6. run the command with
 ```
 bin/console app:hello
 ```
