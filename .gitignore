@@ -8,3 +8,5 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+# file to specify local php version for symfony
+/.php-version 
