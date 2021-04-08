@@ -35,4 +35,25 @@ class HelloController extends AbstractController
         
         return new Response('Hello World');
     }
+
+    /**
+     * @Route("/exception", name="hello")
+     */
+    public function exception(): Response
+    {
+        global $tracer;
+        if ($tracer) {
+            /** @var Span $span */
+            $span = $tracer->getActiveSpan();
+
+            $span->setAttribute('foo', 'bar');
+            $span->updateName('New name');
+            usleep(30000);
+
+            $tracer->startAndActivateSpan('Child span');
+            usleep(30000);
+            
+            throw new \Exception('Ruh roh');
+        }
+    }
 }
