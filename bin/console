@@ -2,6 +2,7 @@
 <?php
 
 use App\Kernel;
+use Nyholm\Psr7\Factory\Psr17Factory;
 use OpenTelemetry\Contrib\Jaeger\Exporter as JaegerExporter;
 use OpenTelemetry\Sdk\Trace\Clock;
 use OpenTelemetry\Sdk\Trace\Sampler\AlwaysOnSampler;
@@ -13,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\Debug;
+use Symfony\Component\HttpClient\Psr18Client;
 
 if (!in_array(PHP_SAPI, ['cli', 'phpdbg', 'embed'], true)) {
     echo 'Warning: The console should be invoked via the CLI version of PHP, not the '.PHP_SAPI.' SAPI'.PHP_EOL;
@@ -56,7 +58,11 @@ $samplingResult = $sampler->shouldSample(
 
 $exporter = new JaegerExporter(
     'My App name CLI',
-    'http://localhost:9412/api/v2/spans'
+    'http://localhost:9412/api/v2/spans',
+    null,
+    new Psr18Client(),
+    new Psr17Factory(),
+    new Psr17Factory()
 );
 
 if (SamplingResult::RECORD_AND_SAMPLED === $samplingResult->getDecision()) {

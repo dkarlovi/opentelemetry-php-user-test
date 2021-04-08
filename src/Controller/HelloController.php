@@ -37,7 +37,7 @@ class HelloController extends AbstractController
     }
 
     /**
-     * @Route("/exception", name="hello")
+     * @Route("/exception", name="exc")
      */
     public function exception(): Response
     {

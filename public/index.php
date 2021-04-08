@@ -1,6 +1,7 @@
 <?php
 
 use App\Kernel;
+use Nyholm\Psr7\Factory\Psr17Factory;
 use OpenTelemetry\Contrib\Jaeger\Exporter as JaegerExporter;
 use OpenTelemetry\Sdk\Trace\Clock;
 use OpenTelemetry\Sdk\Trace\Sampler\AlwaysOnSampler;
@@ -10,6 +11,7 @@ use OpenTelemetry\Sdk\Trace\TracerProvider;
 use OpenTelemetry\Trace as API;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\Debug;
+use Symfony\Component\HttpClient\Psr18Client;
 use Symfony\Component\HttpFoundation\Request;
 
 require dirname(__DIR__).'/vendor/autoload.php';
@@ -41,7 +43,11 @@ $samplingResult = $sampler->shouldSample(
 
 $exporter = new JaegerExporter(
     'My App name Web Server',
-    'http://localhost:9412/api/v2/spans'
+    'http://localhost:9412/api/v2/spans',
+    null,
+    new Psr18Client(),
+    new Psr17Factory(),
+    new Psr17Factory()
 );
 
 if (SamplingResult::RECORD_AND_SAMPLED === $samplingResult->getDecision()) {
